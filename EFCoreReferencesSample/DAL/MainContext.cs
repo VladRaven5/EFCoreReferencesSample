@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCoreReferencesSample.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreReferencesSample.DAL
 {
@@ -8,9 +9,8 @@ namespace EFCoreReferencesSample.DAL
             "User ID=postgres;Password=admin;Host=localhost;Port=5432;Database=EfRelSample;";
 
         public DbSet<Person> Persons { get; set; }
-
         public DbSet<Pet> Pets { get; set; }
-
+        public DbSet<Car> Cars { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
