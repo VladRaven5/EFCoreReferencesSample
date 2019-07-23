@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EFCoreReferencesSample.DAL;
+using EFCoreReferencesSample.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -14,31 +15,37 @@ namespace EFCoreReferencesSample
         {
             using (var context = InitDb())
             {
-                var pet = await context.Pets
-                    .Include(p => p.Owner)
-                    .FirstOrDefaultAsync(p => p.Id == 1);
-
-                var persons = await context.Persons.ToListAsync();
-
-                //set default owner to repeatability
-                await ResetPet(pet, context);
-
-                await CheckReferencePropertyChanged(persons, pet, context);
-
-                await ResetPet(pet, context);
-
-                await CheckIdPropertyChanged(persons, pet, context);
-
-                await ResetPet(pet, context);
-
-                await CheckBothChanged(persons, pet, context);
-
-                await ResetPet(pet, context);
-
-                await SetOneAfterAnother(persons, pet, context);
+                //await CheckEFReferences(context);
+                await CheckDDDModelSegregation(context);
             }
+        }
 
-            //Console.ReadKey();
+        #region Check EF Refs
+
+        private static async Task CheckEFReferences(MainContext context)
+        {
+            var pet = await context.Pets
+                .Include(p => p.Owner)
+                .FirstOrDefaultAsync(p => p.Id == 1);
+
+            var persons = await context.Persons.ToListAsync();
+
+            //set default owner to repeatability
+            await ResetPet(pet, context);
+
+            await CheckReferencePropertyChanged(persons, pet, context);
+
+            await ResetPet(pet, context);
+
+            await CheckIdPropertyChanged(persons, pet, context);
+
+            await ResetPet(pet, context);
+
+            await CheckBothChanged(persons, pet, context);
+
+            await ResetPet(pet, context);
+
+            await SetOneAfterAnother(persons, pet, context);
         }
 
         private static async Task SetOneAfterAnother(List<Person> persons, Pet pet, MainContext context)
@@ -125,6 +132,22 @@ namespace EFCoreReferencesSample
         }
 
 
+        #endregion Check EF Refs
+
+        #region Check DDD Segregation
+
+        private static async Task CheckDDDModelSegregation(MainContext context)
+        {
+            var car = context.Cars.Add(new Car("12345678", 0)).Entity;
+            await context.SaveChangesAsync();
+            
+            car.UpdateLicensePlate("23456789");
+            await context.SaveChangesAsync();
+
+            Console.WriteLine($"Result: {car.LicensePlate}");
+        }
+
+        #endregion Check DDD Segregation
 
         private static MainContext InitDb()
         {
